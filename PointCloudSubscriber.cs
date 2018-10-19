@@ -16,6 +16,7 @@ namespace RosSharp.RosBridgeClient
         private Mesh mesh;
 
         public Transform test_point;
+		public GameObject parent_obj;
 
         public GameObject floorObject;
         static public Vector3 floor_posi;
@@ -41,13 +42,19 @@ namespace RosSharp.RosBridgeClient
             if (isMessageReceived)
             {
                 //Debug.Log("U_isMessageReceived");
-                if(num == 0)
-                {
-                    CreateMesh();
-                    num++;
-                }
+                //if(num == 0)
+                //{
+					GameObject[] childe = GameObject.FindGameObjectsWithTag ("floor");
+					foreach (GameObject temp in childe) {
+						GameObject.Destroy (temp);
+					}
+					//GameObject.Destroy (parent_obj);
+					CreateMesh();
+
+                  //  num++;
+                //}
                 
-                test_point.position = new Vector3(pcl[0].x, pcl[0].y, pcl[0].z);
+                //test_point.position = new Vector3(pcl[0].x, pcl[0].y, pcl[0].z);
                 isMessageReceived = false;
             }
 
@@ -195,6 +202,8 @@ namespace RosSharp.RosBridgeClient
             float max_y = 0.0f;
             float max_z = 0.0f;
 
+
+
             for (int n = 0; n < size; n++)
             {
                 int x_posi = n * point_step + 0;
@@ -216,11 +225,25 @@ namespace RosSharp.RosBridgeClient
                 max_y = ComFloat(y, max_y, "max");
                 max_z = ComFloat(z, max_z, "max");
 
-				pcl[n] = new Vector3(10.0f*x, 10.0f*z, 10.0f*y);
+                pcl[n] = new Vector3(10.0f*x, 10.0f*z, 10.0f*y);
                 indecies[n] = n;
                 colors[n] = new Color(1.0f/size, 1.0f/size, 1.0f/size, 1.0f);
-                Instantiate(floorObject, pcl[n], Quaternion.identity);// as GameObject;
+				Instantiate(floorObject, pcl[n], Quaternion.identity,parent_obj.transform);// as GameObject;
             }
+			/*CombineMeshesのテスト
+			MeshFilter[] meshFilters = parent_obj.GetComponentsInChildren<MeshFilter>();
+			CombineInstance[] combine = new CombineInstance[meshFilters.Length];
+
+			for (int i = 0; i < meshFilters.Length; ++i) {
+				combine[i].mesh = meshFilters[i].sharedMesh;
+				combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+			}
+
+			GameObject result = new GameObject();
+			MeshFilter meshFilter = result.AddComponent<MeshFilter>();
+			meshFilter.mesh = new Mesh();
+			meshFilter.mesh.CombineMeshes(combine);
+*/
 
             Debug.Log("pcl_Finished" + pcl[0]);
             //床生成
